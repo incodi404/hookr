@@ -1,0 +1,6 @@
+{
+  "name": "@hookr/redis",
+  "dependencies": {
+    "ioredis": "^6.0.0"
+  }
+}

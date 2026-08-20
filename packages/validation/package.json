@@ -1,0 +1,6 @@
+{
+  "name": "@hookr/validation",
+  "dependencies": {
+    "zod": "^4.4.3"
+  }
+}

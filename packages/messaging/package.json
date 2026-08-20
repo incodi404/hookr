@@ -1,0 +1,9 @@
+{
+  "name": "@hookr/messaging",
+  "dependencies": {
+    "amqplib": "^2.0.1"
+  },
+  "devDependencies": {
+    "@types/amqplib": "^0.10.8"
+  }
+}
