@@ -1,1 +1,5 @@
-export const logger_var = "This is logger";
+import pino from "pino";
+
+export const logger = (dest: string) => pino({
+    level: "info"
+}, pino.destination(dest))
