@@ -1,4 +1,4 @@
-// This is routing keys.
+// These are routing keys.
 export const SUBSCRIPTIONS = {
     "email-delivery": [
         "error.*",
