@@ -1,0 +1,176 @@
+x-go-service: &go-service
+  develop:
+    watch:
+      - action: sync+restart
+        path: ../../cmd
+        target: /app/cmd
+      - action: sync+restart
+        path: ../../internal
+        target: /app/internal
+      - action: sync+restart
+        path: ../../pkg
+        target: /app/pkg
+      - action: rebuild
+        path: ../../go.mod
+
+services:
+  hookr_nats:
+    image: nats:2.10-alpine
+    container_name: hookr_nats
+    command: [
+        "-js",
+        "-m",
+        "8222",
+        "--user",
+        "${NATS_USER}",
+        "--pass",
+        "${NATS_PASSWORD}",
+      ] # -js: Jetstream -m: monitoring port 8222
+    ports:
+      - 8222:8222
+      - 4222:4222
+    volumes:
+      - nats_data:/data
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "wget --spider -q http://localhost:8222/healthz || exit 1",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  hookr_db:
+    image: postgres:15
+    container_name: hookr_db
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - hookr_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    restart: unless-stopped
+
+  redis:
+    image: redis:latest
+    container_name: redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    environment:
+      - REDIS_ARGS=--requirepass ${REDIS_PASSWORD} --appendonly yes
+    restart: unless-stopped
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          'redis-cli -a "$${REDIS_PASSWORD}" ping 2>/dev/null | grep -q PONG',
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  hookr-api:
+    <<: *go-service
+    container_name: hookr-api
+    build:
+      context: ../..
+      dockerfile: internal/api/api.Dockerfile
+      # target: dev
+    ports:
+      - 7000:7000
+    env_file:
+      - ../../.env
+    command: ["go", "run", "./cmd/api"]
+    depends_on:
+      redis:
+        condition: service_healthy
+      hookr_db:
+        condition: service_healthy
+      hookr_nats:
+        condition: service_healthy
+    volumes:
+      - ../../internal/api:/app/internal/api
+      - ../../pkg:/app/pkg
+
+  delay_worker:
+    <<: *go-service
+    container_name: delay_worker
+    build:
+      context: ../..
+      dockerfile: internal/delay_worker/delay.Dockerfile
+      # target: dev
+    env_file:
+      - ../../.env
+    command: ["go", "run", "./cmd/delay-worker"]
+    depends_on:
+      redis:
+        condition: service_healthy
+      hookr_db:
+        condition: service_healthy
+      hookr_nats:
+        condition: service_healthy
+    volumes:
+      - ../../internal/delay_worker:/app/internal/delay_worker
+      - ../../pkg:/app/pkg
+
+  delivery_worker:
+    <<: *go-service
+    container_name: delivery_worker
+    build:
+      context: ../..
+      dockerfile: internal/delivery_worker/delivery.Dockerfile
+      # target: dev
+    env_file:
+      - ../../.env
+    command: ["go", "run", "./cmd/delivery-worker"]
+    depends_on:
+      redis:
+        condition: service_healthy
+      hookr_db:
+        condition: service_healthy
+      hookr_nats:
+        condition: service_healthy
+    volumes:
+      - ../../internal/delivery_worker:/app/internal/delivery_worker
+      - ../../pkg:/app/pkg
+
+  ws_server:
+    <<: *go-service
+    container_name: ws_server
+    build:
+      context: ../..
+      dockerfile: internal/ws_server/ws.Dockerfile
+      # target: dev
+    env_file:
+      - ../../.env
+    ports:
+      - 7001:7001
+    command: ["go", "run", "./cmd/ws-server"]
+    depends_on:
+      redis:
+        condition: service_healthy
+      hookr_db:
+        condition: service_healthy
+      hookr_nats:
+        condition: service_healthy
+    volumes:
+      - ../../internal/ws_server:/app/internal/ws_server
+      - ../../pkg:/app/pkg
+
+volumes:
+  nats_data:
+  redis_data:
+  hookr_db_data:
