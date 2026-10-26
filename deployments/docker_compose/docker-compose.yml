@@ -4,14 +4,22 @@ x-go-service: &go-service
       - action: sync+restart
         path: ../../cmd
         target: /app/cmd
+        ignore:
+          - "*.log"
       - action: sync+restart
         path: ../../internal
         target: /app/internal
+        ignore:
+          - "*.log"
       - action: sync+restart
         path: ../../pkg
         target: /app/pkg
+        ignore:
+          - "*.log"
       - action: rebuild
         path: ../../go.mod
+        ignore:
+          - "*.log"
 
 services:
   hookr_nats:
@@ -101,9 +109,9 @@ services:
         condition: service_healthy
       hookr_nats:
         condition: service_healthy
-    volumes:
-      - ../../internal/api:/app/internal/api
-      - ../../pkg:/app/pkg
+    # volumes:
+    #   - ../../internal/api:/app/internal/api
+    #   - ../../pkg:/app/pkg
 
   delay_worker:
     <<: *go-service
@@ -122,9 +130,9 @@ services:
         condition: service_healthy
       hookr_nats:
         condition: service_healthy
-    volumes:
-      - ../../internal/delay_worker:/app/internal/delay_worker
-      - ../../pkg:/app/pkg
+    # volumes:
+    #   - ../../internal/delay_worker:/app/internal/delay_worker
+    #   - ../../pkg:/app/pkg
 
   delivery_worker:
     <<: *go-service
@@ -143,9 +151,9 @@ services:
         condition: service_healthy
       hookr_nats:
         condition: service_healthy
-    volumes:
-      - ../../internal/delivery_worker:/app/internal/delivery_worker
-      - ../../pkg:/app/pkg
+    # volumes:
+    #   - ../../internal/delivery_worker:/app/internal/delivery_worker
+    #   - ../../pkg:/app/pkg
 
   ws_server:
     <<: *go-service
@@ -166,9 +174,9 @@ services:
         condition: service_healthy
       hookr_nats:
         condition: service_healthy
-    volumes:
-      - ../../internal/ws_server:/app/internal/ws_server
-      - ../../pkg:/app/pkg
+    # volumes:
+    #   - ../../internal/ws_server:/app/internal/ws_server
+    #   - ../../pkg:/app/pkg
 
 volumes:
   nats_data:
