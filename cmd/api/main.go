@@ -30,8 +30,8 @@ func main() {
 		Host:     utils.GetEnv("POSTGRES_HOST", "hookr_db"),
 		Port:     utils.StrToInt(utils.GetEnv("POSTGRES_PORT", "5432")),
 		DbName:   utils.GetEnv("POSTGRES_DB", "hookr_db"),
-		User:     utils.GetEnv("POSTGRES_USER", "hookr_db"),
-		Password: utils.GetEnv("POSTGRES_PASSWORD", "Hookr876AyeKuchAbr785"),
+		User:     utils.GetEnv("POSTGRES_USER", "NONE"),
+		Password: utils.GetEnv("POSTGRES_PASSWORD", "NONE"),
 	})
 	if err != nil {
 		logruslogger.Writer.Error(err)
