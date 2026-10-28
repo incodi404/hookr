@@ -13,7 +13,7 @@ func ConfigLogrus() {
 	logger.SetFormatter(&logrus.JSONFormatter{})
 
 	logger.SetOutput(&lumberjack.Logger{
-		Filename:   "../../log/app.log",
+		Filename:   "./log/app.log",
 		MaxSize:    100, // MB
 		MaxBackups: 5,   // Number of old files
 		MaxAge:     30,  // Days

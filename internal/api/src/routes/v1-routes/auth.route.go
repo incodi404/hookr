@@ -1,15 +1,10 @@
 package v1routes
 
 import (
-	"net/http"
-
 	"github.com/gin-gonic/gin"
+	"github.com/incodi404/hookr.git/internal/api/src/controllers"
 )
 
-func UserSignin(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{"message": "API is working"})
-}
-
 func AuthRoutes(rg *gin.RouterGroup) {
-	rg.GET("/signin", UserSignin)
+	rg.GET("/signin", controllers.UserSignin)
 }

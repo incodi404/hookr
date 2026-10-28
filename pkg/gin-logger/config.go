@@ -9,7 +9,7 @@ func ConfigGinLogger() {
 	gin.DisableConsoleColor()
 
 	gin.DefaultWriter = &lumberjack.Logger{
-		Filename:   "../../gin.log",
+		Filename:   "./log/gin.log",
 		MaxSize:    100,
 		MaxBackups: 3,
 		MaxAge:     30,

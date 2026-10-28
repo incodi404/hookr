@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	logruslogger "github.com/incodi404/hookr.git/pkg/logrus-logger"
@@ -44,6 +45,9 @@ func ConnectPGPool(ctx context.Context, config models.DBConfig) (*pgxpool.Pool, 
 	}
 
 	DbPool = pool
+
+	logruslogger.Writer.Info("[PGSQL] PGSQL Database is connected")
+	fmt.Println("[PGSQL] PGSQL Database is connected")
 
 	return pool, nil
 }
