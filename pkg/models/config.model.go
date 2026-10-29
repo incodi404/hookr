@@ -9,6 +9,13 @@ type ServerConfig struct {
 	MaxHeaderBytes int
 }
 
+type RdbConfig struct {
+	Host     string
+	Port     string
+	Password string
+	Db       int
+}
+
 type DBConfig struct {
 	Host     string
 	Port     int

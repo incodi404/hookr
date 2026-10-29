@@ -9,6 +9,7 @@ import (
 	"github.com/incodi404/hookr.git/pkg/db"
 	logruslogger "github.com/incodi404/hookr.git/pkg/logrus-logger"
 	"github.com/incodi404/hookr.git/pkg/models"
+	"github.com/incodi404/hookr.git/pkg/redis"
 	"github.com/incodi404/hookr.git/pkg/utils"
 	"github.com/joho/godotenv"
 )
@@ -25,7 +26,7 @@ func main() {
 
 	ctx := context.Background()
 
-	// connecting db
+	// connecting pg db
 	_, err = db.ConnectPGPool(ctx, models.DBConfig{
 		Host:     utils.GetEnv("POSTGRES_HOST", "hookr_db"),
 		Port:     utils.StrToInt(utils.GetEnv("POSTGRES_PORT", "5432")),
@@ -36,6 +37,18 @@ func main() {
 	if err != nil {
 		logruslogger.Writer.Error(err)
 		log.Fatal(err)
+	}
+
+	// connecting redis
+	_, err = redis.ConnectRedis(ctx, models.RdbConfig{
+		Host:     utils.GetEnv("REDIS_HOST", "redis"),
+		Port:     utils.GetEnv("REDIS_PORT", "6379"),
+		Password: utils.GetEnv("REDIS_PASSWORD", "NONE"),
+		Db:       0,
+	})
+	if err != nil {
+		logruslogger.Writer.Error("[REDIS] Redis connection has been failed: ", err)
+		log.Fatal("[REDIS] Redis connection has been failed: ", err)
 	}
 
 	// starting server
