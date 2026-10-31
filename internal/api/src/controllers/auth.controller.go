@@ -37,7 +37,7 @@ func UserGenerateSignupOtp(c *gin.Context) {
 
 func UserVerifyOtp(c *gin.Context) {
 	// get data
-	var reqBody dto.VerifyOtp
+	var reqBody dto.VerifyOtpReq
 
 	if err := c.ShouldBindJSON(&reqBody); err != nil {
 		c.Error(middlewares.ErrorBadRequest)

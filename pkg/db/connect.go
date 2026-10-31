@@ -5,18 +5,17 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/incodi404/hookr.git/pkg/db/sqlc"
 	logruslogger "github.com/incodi404/hookr.git/pkg/logrus-logger"
 	"github.com/incodi404/hookr.git/pkg/models"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-var DbPool *pgxpool.Pool
-
-func ConnectPGPool(ctx context.Context, config models.DBConfig) (*pgxpool.Pool, error) {
+func ConnectPGPool(ctx context.Context, config models.DBConfig) (*pgxpool.Pool, *sqlc.Queries, error) {
 	cfg, err := pgxpool.ParseConfig("")
 	if err != nil {
 		logruslogger.Writer.Error("[PGSQL] Error occured in PGSQL: ", err)
-		return nil, err
+		return nil, nil, err
 	}
 
 	cfg.ConnConfig.Host = config.Host
@@ -35,19 +34,20 @@ func ConnectPGPool(ctx context.Context, config models.DBConfig) (*pgxpool.Pool, 
 	pool, err := pgxpool.NewWithConfig(ctx, cfg)
 	if err != nil {
 		logruslogger.Writer.Error("[PGSQL] Error occured in PGSQL: ", err)
-		return nil, err
+		return nil, nil, err
 	}
 
 	if err := pool.Ping(ctx); err != nil {
 		pool.Close()
 		logruslogger.Writer.Error("[PGSQL] Error occured in PGSQL: ", err)
-		return nil, err
+		return nil, nil, err
 	}
 
-	DbPool = pool
+	// initialize sqlc
+	queries := sqlc.New(pool)
 
 	logruslogger.Writer.Info("[PGSQL] PGSQL Database is connected")
 	fmt.Println("[PGSQL] PGSQL Database is connected")
 
-	return pool, nil
+	return pool, queries, nil
 }

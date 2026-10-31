@@ -27,7 +27,7 @@ func main() {
 	ctx := context.Background()
 
 	// connecting pg db
-	_, err = db.ConnectPGPool(ctx, models.DBConfig{
+	_, _, err = db.ConnectPGPool(ctx, models.DBConfig{
 		Host:     utils.GetEnv("POSTGRES_HOST", "hookr_db"),
 		Port:     utils.StrToInt(utils.GetEnv("POSTGRES_PORT", "5432")),
 		DbName:   utils.GetEnv("POSTGRES_DB", "hookr_db"),

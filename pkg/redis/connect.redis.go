@@ -11,7 +11,11 @@ import (
 
 var RdbCli *redis.Client
 
-func ConnectRedis(ctx context.Context, cfg models.RdbConfig) (*redis.Client, error) {
+type RedisClient struct {
+	Client *redis.Client
+}
+
+func ConnectRedis(ctx context.Context, cfg models.RdbConfig) (*RedisClient, error) {
 	// create connection
 	rdb := redis.NewClient(&redis.Options{
 		Addr:     cfg.Host + ":" + cfg.Port,
@@ -28,7 +32,23 @@ func ConnectRedis(ctx context.Context, cfg models.RdbConfig) (*redis.Client, err
 	logruslogger.Writer.Info("[REDIS] Redis is connected")
 	fmt.Println("[REDIS] Redis is connected")
 
-	RdbCli = rdb
+	return &RedisClient{
+		Client: rdb,
+	}, nil
+}
 
-	return rdb, nil
+func (r *RedisClient) Close() error {
+	if r == nil || r.Client == nil {
+		return nil
+	}
+
+	return r.Client.Close()
+}
+
+func (r *RedisClient) ValidateClient() bool {
+	if r == nil || r.Client == nil {
+		return false
+	}
+
+	return true
 }
